@@ -69,23 +69,25 @@ class TestDNAFountain(unittest.TestCase):
         binary = convert_str_to_binary(nucleotide_string)
         self.assertTrue(contains_no_letters(binary))
         nucleotide_string_two = 'AAGATCATTGGC'
-        expected_binary_two = '000001001011001010010111'
+        expected_binary_two = '000001001110001111010110'
         output_binary_two = convert_str_to_binary(nucleotide_string_two)
         self.assertEqual(output_binary_two, expected_binary_two)
 
     def test_split_binary_droplet_string(self):
         binary_string = '000000000000000001001101011110110011000001100100011111000111010100110000011011010111010101110001011000110011000000100010001000000010011000100100001110000011000001111100011001010111100101110001011110110111110101100100011011010011000001111100011100010110001000110000011001000101111000100010'
         binary = convert_str_to_binary(binary_string)
-        _, _, message = split_binary_droplet_string(binary)
+        _, message, _ = split_binary_droplet_string(binary)
         self.assertEqual(len(message), 256)
         self.assertEqual(message, '0100110101111011001100000110010001111100011101010011000001101101011101010111000101100011001100000010001000100000001001100010010000111000001100000111110001100101011110010111000101111011011111010110010001101101001100000111110001110001011000100011000001100100')
 
     def test_block_0(self):
         string = 'AAAAAAAAGACGGCTCACAAGTGAGCCAGCGGACAAGTCGGCGGGCAGGTACACAAATATATAAATGTATGAACTAACAAGCCAGTGGGCTGGCAGGCTCGCCGGTGAGTCGACAAGCCAGCAGGTATACAAGTGAGGCTATAT'
         binary = convert_str_to_binary(string)
-        _, _, message = split_binary_droplet_string(binary)
+        _, message, _ = split_binary_droplet_string(binary)
         ascii_string = convert_to_ascii(message)
-        print(ascii_string)
+        expected_ascii_message = 'In the year 3074, humanity has t'
+        self.assertEqual(ascii_string, expected_ascii_message)
+
 
 if __name__ == '__main__':
     unittest.main()

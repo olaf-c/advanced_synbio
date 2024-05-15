@@ -27,13 +27,13 @@ def split_binary_droplet_string(droplet_string):
     luby = droplet_string[:16]
     error = droplet_string[272:]
     message = droplet_string[16:272]
-    return luby, error, message
+    return luby, message, error
 
 def split_fasta(binary_sequence_dict):
     pattern = re.compile(r'droplet_n(\d+)_.*')
     binary_sequence_dict = {pattern.sub(r'\1', key): value for key, value in binary_sequence_dict.items()}
     for droplet in binary_sequence_dict:
-        luby_index_string, error_correction_string, droplet_message_string = split_binary_droplet_string(binary_sequence_dict[droplet]['Binary'])
+        luby_index_string, droplet_message_string, error_correction_string = split_binary_droplet_string(binary_sequence_dict[droplet]['Binary'])
         binary_sequence_dict[droplet]['LubyIndex'] = luby_index_string
         binary_sequence_dict[droplet]['ErrorCorrection'] = error_correction_string
         binary_sequence_dict[droplet]['DropletMessage'] = droplet_message_string
@@ -41,7 +41,7 @@ def split_fasta(binary_sequence_dict):
     return binary_sequence_dict
 
 def convert_str_to_binary(seq_string):
-    encoding_scheme = {"A": '00', "G": '01', "T": '10', "C": '11' }
+    encoding_scheme = {"A": '00', "G": '01', "C": '10', "T": '11' }
     binary = ''
     for nucleotide in seq_string:
         binary += encoding_scheme.get(nucleotide, nucleotide)
@@ -74,7 +74,6 @@ def reverse_luby(binary_droplet_dict, luby_blocks):
     for index, droplet in one_to_one_droplets.iterrows():
         solved_block_dict[droplet['BlockNumbers'][0]] = binary_droplet_dict[droplet['DropletNumber']]['DropletMessage'] #probably works. block num is right. binary message is different.
     while len(solved_block_dict)< number_of_blocks:
-        
         for index, droplet in luby_blocks.iterrows():
             #find droplets with all but one block known
             known_list = []
@@ -128,7 +127,7 @@ def convert_to_ascii(binary_string):
 
 def process_files(droplet_sequence_dict, luby_blocks):
     luby_blocks = split_luby(luby_blocks)
-    binary_droplet_dict = convert_to_binary(droplet_sequence_dict)
+    binary_droplet_dict = convert_seq_to_binary(droplet_sequence_dict)
     binary_droplet_dict = split_fasta(binary_droplet_dict)
     return binary_droplet_dict, luby_blocks
 
