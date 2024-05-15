@@ -21,14 +21,19 @@ Takes the binary dictionary and renames the keys to just the number. Each key's 
 Identifies droplets containing only one block. Then loops through the remainder of the droplets solving droplets with only one unknown block by calls the `bitwise_xor` function to calculate the bitwise XOR value. The droplets are sorted by number of block components to reduce looping time. The resulting strings are concatenated and returned. 
 * `bitwise_xor`
 Takes two strings and iterates through each character. It performs a XOR operation on the respective digits. It obeys the following truth table:
-  | Input1         | Input2         | Output                      |
-| :----------- | :--------------: | -------------------------: |
-| 0| 0 | 0  |
-| 0    | 1   | 1 |
-| 1| 0 | 1  |
-| 1    | 1   | 0 |
-##### Convert to ASCII
 
+ Input1 | Input2 | Output 
+---|---|---
+0| 0 | 0  
+0| 1   | 1 
+1| 0 | 1 
+1 | 1   | 0 
+
+Since XOR operations are reversible this should result in the final unknown string.
+
+##### Convert to ASCII
+* `convert_to_ascii`
+Converts the string into an int and prints the binary message to without dependencies.
 
 
 
