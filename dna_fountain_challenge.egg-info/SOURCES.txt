@@ -1,0 +1,9 @@
+setup.py
+dna_fountain_challenge.egg-info/PKG-INFO
+dna_fountain_challenge.egg-info/SOURCES.txt
+dna_fountain_challenge.egg-info/dependency_links.txt
+dna_fountain_challenge.egg-info/top_level.txt
+package/__init__.py
+package/challenge_one_dna_fountain.py
+tests/__init__.py
+tests/test_module_dna_fountain.py
