@@ -109,15 +109,20 @@ def bad_luby(binary_droplet_dict, luby_blocks):
                     number_true = number_true +1
             xor_product.append(number_true%2)
         binary_string.append(xor_product)  
+
 def convert_to_ascii(binary_string):
     binary_message = int(binary_string, 2)
     ascii_message = binary_message.to_bytes((binary_message.bit_length() + 7) // 8, 'big').decode()
     return ascii_message
 
-if __name__ == "__main__":
-    droplet_sequence_dict, luby_blocks = load_in_files()
+def process_files(droplet_sequence_dict, luby_blocks):
     luby_blocks = split_luby(luby_blocks)
     binary_droplet_dict = convert_to_binary(droplet_sequence_dict)
     binary_droplet_dict = split_fasta(binary_droplet_dict)
+    return binary_droplet_dict, luby_blocks
+
+if __name__ == "__main__":
+    droplet_sequence_dict, luby_blocks = load_in_files()
+    binary_droplet_dict, luby_blocks = process_files(droplet_sequence_dict, luby_blocks)
     binary_string = reverse_luby(binary_droplet_dict, luby_blocks)
     print(convert_to_ascii(binary_string))
