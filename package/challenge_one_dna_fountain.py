@@ -23,23 +23,34 @@ def split_luby(luby_blocks):
     luby_blocks['BlockNumbers'] = luby_blocks['BlockNumbers'].str.split(',',expand=False).apply(lambda x: list(map(int, x)))
     return luby_blocks
 
+def split_binary_droplet_string(droplet_string):
+    luby = droplet_string[:16]
+    error = droplet_string[272:]
+    message = droplet_string[16:272]
+    return luby, error, message
+
 def split_fasta(binary_sequence_dict):
     pattern = re.compile(r'droplet_n(\d+)_.*')
     binary_sequence_dict = {pattern.sub(r'\1', key): value for key, value in binary_sequence_dict.items()}
     for droplet in binary_sequence_dict:
-        binary_sequence_dict[droplet]['LubyIndex'] = binary_sequence_dict[droplet]['Binary'][:16]
-        binary_sequence_dict[droplet]['ErrorCorrection'] = binary_sequence_dict[droplet]['Binary'][272:]
-        binary_sequence_dict[droplet]['DropletMessage'] = binary_sequence_dict[droplet]['Binary'][16:272]
+        luby_index_string, error_correction_string, droplet_message_string = split_binary_droplet_string(binary_sequence_dict[droplet]['Binary'])
+        binary_sequence_dict[droplet]['LubyIndex'] = luby_index_string
+        binary_sequence_dict[droplet]['ErrorCorrection'] = error_correction_string
+        binary_sequence_dict[droplet]['DropletMessage'] = droplet_message_string
     binary_sequence_dict = {int(key): value for key, value in binary_sequence_dict.items()}
     return binary_sequence_dict
 
-def convert_to_binary(droplet_sequence_dict):
-    encoding_scheme = {"A": '00', "G": '01', "T": '10', "C": '11', }
+def convert_str_to_binary(seq_string):
+    encoding_scheme = {"A": '00', "G": '01', "T": '10', "C": '11' }
+    binary = ''
+    for nucleotide in seq_string:
+        binary += encoding_scheme.get(nucleotide, nucleotide)
+    return binary
+
+def convert_seq_to_binary(droplet_sequence_dict):
     binary_droplet_dict = {} #original is immutable
     for droplet_id in droplet_sequence_dict:
-        binary = ''
-        for nucleotide in droplet_sequence_dict[droplet_id].seq:
-            binary += encoding_scheme.get(nucleotide, nucleotide)
+        binary = convert_str_to_binary(droplet_sequence_dict[droplet_id].seq)  
         binary_droplet_dict[droplet_id] = {"Seq": droplet_sequence_dict[droplet_id].seq, "Binary": binary}
     return binary_droplet_dict
 
@@ -58,7 +69,7 @@ def reverse_luby(binary_droplet_dict, luby_blocks):
     solved_block_dict = {}
     luby_blocks = luby_blocks.iloc[luby_blocks['BlockNumbers'].apply(len).argsort()] #works
     max_block_per_drop = [max(x) for x in luby_blocks['BlockNumbers']]
-    number_of_blocks = max(max_block_per_drop)
+    number_of_blocks = max(max_block_per_drop)+1 #blocks are zero indexed you numpty
     one_to_one_droplets = luby_blocks[(luby_blocks['BlockNumbers'].apply(len) == 1)] #works
     for index, droplet in one_to_one_droplets.iterrows():
         solved_block_dict[droplet['BlockNumbers'][0]] = binary_droplet_dict[droplet['DropletNumber']]['DropletMessage'] #probably works. block num is right. binary message is different.
