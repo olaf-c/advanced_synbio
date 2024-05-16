@@ -63,18 +63,20 @@ def bitwise_xor(binary_message_1, binary_message_2):
             result_binary = result_binary + '0'
     return result_binary
 
-def reverse_luby(binary_droplet_dict, luby_blocks):
+def reverse_luby(message_droplet_dict, block_to_droplet_df):
     #XOR operation
     binary_string = ''
     solved_block_dict = {}
-    luby_blocks = luby_blocks.iloc[luby_blocks['BlockNumbers'].apply(len).argsort()] #works
-    max_block_per_drop = [max(x) for x in luby_blocks['BlockNumbers']]
+    #sort the luby_block pandas file by droplets containing the fewest number of block to the most
+    block_to_droplet_df = block_to_droplet_df.iloc[block_to_droplet_df['BlockNumbers'].apply(len).argsort()] #works
+    max_block_per_drop = [max(x) for x in block_to_droplet_df['BlockNumbers']] #calculate the number of unique blocks
     number_of_blocks = max(max_block_per_drop)+1 #blocks are zero indexed you numpty
-    one_to_one_droplets = luby_blocks[(luby_blocks['BlockNumbers'].apply(len) == 1)] #works
-    for index, droplet in one_to_one_droplets.iterrows():
-        solved_block_dict[droplet['BlockNumbers'][0]] = binary_droplet_dict[droplet['DropletNumber']]['DropletMessage'] #probably works. block num is right. binary message is different.
+    #droplets that don't need XOR saved to one_to_one // solved_block_dict
+    one_to_one_droplets = block_to_droplet_df[(block_to_droplet_df['BlockNumbers'].apply(len) == 1)] #works
+    for index, droplet in one_to_one_droplets.iterrows(): 
+        solved_block_dict[droplet['BlockNumbers'][0]] = message_droplet_dict[droplet['DropletNumber']]['DropletMessage'] #Works
     while len(solved_block_dict)< number_of_blocks:
-        for index, droplet in luby_blocks.iterrows():
+        for index, droplet in block_to_droplet_df.iterrows():
             #find droplets with all but one block known
             known_list = []
             unknown_list = []
@@ -86,10 +88,10 @@ def reverse_luby(binary_droplet_dict, luby_blocks):
             if len(unknown_list) == 1:
                 calculated_code = "0"*256
                 for block in known_list:
-                    calculated_code = bitwise_xor( calculated_code, solved_block_dict[block])
-                calculated_code = bitwise_xor(calculated_code, binary_droplet_dict[unknown_list[0]]['DropletMessage'])
+                    calculated_code = bitwise_xor(calculated_code, solved_block_dict[block])
+                calculated_code = bitwise_xor(calculated_code, message_droplet_dict[droplet['DropletNumber']]['DropletMessage'] )
         
-                solved_block_dict[unknown_list[0]] = calculated_code #works
+                solved_block_dict[unknown_list[0]] = calculated_code
     for i in range(number_of_blocks):
         binary_string = binary_string + solved_block_dict[i]
     return binary_string
@@ -131,8 +133,10 @@ def process_files(droplet_sequence_dict, luby_blocks):
     binary_droplet_dict = split_fasta(binary_droplet_dict)
     return binary_droplet_dict, luby_blocks
 
-if __name__ == "__main__":
+def main():
     droplet_sequence_dict, luby_blocks = load_in_files()
     binary_droplet_dict, luby_blocks = process_files(droplet_sequence_dict, luby_blocks)
     binary_string = reverse_luby(binary_droplet_dict, luby_blocks)
     print(convert_to_ascii(binary_string))
+if __name__ == "__main__":
+    main()

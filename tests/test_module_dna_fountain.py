@@ -44,6 +44,11 @@ class TestDNAFountain(unittest.TestCase):
         split_dict = split_fasta(binary_dict)
         luby_reversed_message = reverse_luby(split_dict, blocks)
         self.assertIsInstance(luby_reversed_message, str)
+
+        string = convert_to_ascii(luby_reversed_message)
+        substring = 'that wield the power to shape pl'
+        self.assertTrue(substring in string)
+
     def test_convert_to_ascii(self):
         binary_string = "01000001011100110010000001001001001000000111011101100001011011000110101100100000011101000110100001110010011011110111010101100111011010000010000001110100011010000110010100100000011101100110000101101100011011000110010101111001001000000110111101100110001000000111010001101000011001010010000001110011011010000110000101100100011011110111011100100000011011110110011000100000011001000110010101100001011101000110100000100000010010010010000001110100011000010110101101100101001000000110000100100000011011000110111101101111011010110010000001100001011101000010000001101101011110010010000001101100011010010110011001100101001000000110000101101110011001000010000001110010011001010110000101101100011010010111101001100101001000000111010001101000011001010111001001100101001001110111001100100000011011100110111101110100011010000110100101101110001001110010000001101100011001010110011001110100"
         string = convert_to_ascii(binary_string)
@@ -87,6 +92,49 @@ class TestDNAFountain(unittest.TestCase):
         ascii_string = convert_to_ascii(message)
         expected_ascii_message = 'In the year 3074, humanity has t'
         self.assertEqual(ascii_string, expected_ascii_message)
+
+    def test_block_20(self):
+        #drop_n135 - blocks: [27]
+        #drop_n188 - blocks: [20, 27]
+        block_27 = 'AAAACAGCGTGTGCGGGTACGTATACAAGCACGCGGGTCGGCTTGCTCGCGAACAAGCCGGCTGGCAGGCGTGCCGGCTCGCAGGTGAGCCGGCTTGCTCACTAACAAGCTTGTACACAAGCCGGTGAACAAGCATTGATGACC'
+        block_20 = 'AAAACTCTAAGAAGGGAAAAAGACGGGTAATCAATAAGGTAACAGATCAACGGAGGAATCAATAAAACAATCAGTGAAGTAAGAAAGTGAGGGATTAATTAATAGGCGAAAAAAGTGATCAATCGGGAGAACAACCATGGTGCG'
+        binary_27 = convert_str_to_binary(block_27)
+        binary_20 = convert_str_to_binary(block_20)
+        _, message_27, _ = split_binary_droplet_string(binary_27)
+        _, message_20, _ = split_binary_droplet_string(binary_20)
+        xor_output = bitwise_xor(message_27, message_20)  #010
+        ascii_string = convert_to_ascii(xor_output)
+        self.assertEqual('sprawling megacities, a young bi', ascii_string)
+
+    def test_block_20(self):
+        #drop_n135 - blocks: [27]
+        #drop_n188 - blocks: [20, 27]
+        #drop_n173 - blocks: [20, 12]
+        null_block = "0"*256
+        drop_135 = 'AAAACAGCGTGTGCGGGTACGTATACAAGCACGCGGGTCGGCTTGCTCGCGAACAAGCCGGCTGGCAGGCGTGCCGGCTCGCAGGTGAGCCGGCTTGCTCACTAACAAGCTTGTACACAAGCCGGTGAACAAGCATTGATGACC'
+        drop_188 = 'AAAACTCTAAGAAGGGAAAAAGACGGGTAATCAATAAGGTAACAGATCAACGGAGGAATCAATAAAACAATCAGTGAAGTAAGAAAGTGAGGGATTAATTAATAGGCGAAAAAAGTGATCAATCGGGAGAACAACCATGGTGCG'
+        drop_173 = 'AAAACCTAAAGTAGCAAGATAGGGGGGTAGCTAAAAAACTAACTGAGAGATGAGAGAATTAAGAGAATAGCGAGCTAGTCAAAAAAAGAATAGGGAAATCAAAAAACCAAGTAGGAAGTCAAACAAAAAGACAAGGCCTCGGTC'
+        binary_135 = convert_str_to_binary(drop_135)
+        binary_188 = convert_str_to_binary(drop_188)
+        binary_173 = convert_str_to_binary(drop_173)
+        _, message_135, _ = split_binary_droplet_string(binary_135)
+        _, message_188, _ = split_binary_droplet_string(binary_188)
+        _, message_173, _ = split_binary_droplet_string(binary_173)
+        xor_load_in_27 = bitwise_xor(null_block, message_135) 
+        xor_calculate_20 = bitwise_xor(xor_load_in_27, message_188) 
+        xor_calculate_12 = bitwise_xor(message_173, xor_calculate_20)  #010
+        
+        ascii_27 = convert_to_ascii(xor_load_in_27)
+        ascii_20 = convert_to_ascii(xor_calculate_20)
+        ascii_12 = convert_to_ascii(xor_calculate_12)
+        self.assertEqual('wers beyond imagination, or it c', ascii_27)
+        self.assertEqual('sprawling megacities, a young bi', ascii_20)
+        self.assertEqual('that wield the power to shape pl', ascii_12)
+    
+
+        
+
+
 
 
 if __name__ == '__main__':
