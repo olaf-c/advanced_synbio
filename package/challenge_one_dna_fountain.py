@@ -23,22 +23,6 @@ def split_luby(luby_blocks):
     luby_blocks['BlockNumbers'] = luby_blocks['BlockNumbers'].str.split(',',expand=False).apply(lambda x: list(map(int, x)))
     return luby_blocks
 
-def split_binary_droplet_string(droplet_string):
-    luby = droplet_string[:16]
-    error = droplet_string[272:]
-    message = droplet_string[16:272]
-    return luby, message, error
-
-def split_fasta(binary_sequence_dict):
-    pattern = re.compile(r'droplet_n(\d+)_.*')
-    binary_sequence_dict = {pattern.sub(r'\1', key): value for key, value in binary_sequence_dict.items()}
-    for droplet in binary_sequence_dict:
-        luby_index_string, droplet_message_string, error_correction_string = split_binary_droplet_string(binary_sequence_dict[droplet]['Binary'])
-        binary_sequence_dict[droplet]['LubyIndex'] = luby_index_string
-        binary_sequence_dict[droplet]['ErrorCorrection'] = error_correction_string
-        binary_sequence_dict[droplet]['DropletMessage'] = droplet_message_string
-    binary_sequence_dict = {int(key): value for key, value in binary_sequence_dict.items()}
-    return binary_sequence_dict
 
 def convert_str_to_binary(seq_string):
     encoding_scheme = {"A": '00', "G": '01', "C": '10', "T": '11' }
@@ -54,6 +38,23 @@ def convert_seq_to_binary(droplet_sequence_dict):
         binary_droplet_dict[droplet_id] = {"Seq": droplet_sequence_dict[droplet_id].seq, "Binary": binary}
     return binary_droplet_dict
 
+def split_binary_droplet_string(droplet_string):
+    luby = droplet_string[:16]
+    error = droplet_string[272:]
+    message = droplet_string[16:272]
+    return luby, message, error
+
+def rename_keys_and_split_fasta(binary_sequence_dict):
+    pattern = re.compile(r'droplet_n(\d+)_.*')
+    binary_sequence_dict = {pattern.sub(r'\1', key): value for key, value in binary_sequence_dict.items()}
+    for droplet in binary_sequence_dict:
+        luby_index_string, droplet_message_string, error_correction_string = split_binary_droplet_string(binary_sequence_dict[droplet]['Binary'])
+        binary_sequence_dict[droplet]['LubyIndex'] = luby_index_string
+        binary_sequence_dict[droplet]['ErrorCorrection'] = error_correction_string
+        binary_sequence_dict[droplet]['DropletMessage'] = droplet_message_string
+    binary_sequence_dict = {int(key): value for key, value in binary_sequence_dict.items()}
+    return binary_sequence_dict
+    
 def bitwise_xor(binary_message_1, binary_message_2):
     result_binary = ''
     for x in range(len(binary_message_1)):
@@ -96,32 +97,6 @@ def reverse_luby(message_droplet_dict, block_to_droplet_df):
         binary_string = binary_string + solved_block_dict[i]
     return binary_string
 
- 
-# '0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
-# '0110011001110101011000110110001000110000011100110111010101101101011110100111101101110100001100000111110101111001011100010111011001111101011110110111000101100100011111010111101001111011001110000011000001111010011000110011000001111101011001000011000001110010'
-# '0110011001110101011000110110001000110000011100110111010101101101011110100111101101110100001100000111110101111001011100010111011001111101011110110111000101100100011111010111101001111011001110000011000001111010011000110011000001111101011001000011000001110010'
-#
-# '0110011001110101011000110110001000110000011100110111010101101101011110100111101101110100001100000111110101111001011100010111011001111101011110110111000101100100011111010111101001111011001110000011000001111010011000110011000001111101011001000011000001110010'
-# '0110110100110010000011100111010100111101001001110111101001101000011000100111001000100001010100000110010100110000011110100110001101110001010010100100110001101000001101000100110101111111011000000010101000110000011001110111110101100101011011110110111101100111'
-# '0000101101000111011011010001011100001101010101000000111100000101000110000000100101010101011000000001100001001001000010110001010100001100001100010011110100001100010010010011011100000100010110000001101001001010000001000100110100011000000010110101111100010101'
-# '0000101101000111011011010001011100001101010101000000111100000101000110000000100101010101011000000001100001001001000010110001010100001100001100010011110100001100010010010011011100000100010110000001101001001010000001000100110100011000000010110101111100010101'                   
- 
-
-def bad_luby(binary_droplet_dict, luby_blocks):
-    binary_string = []
-    for droplet in luby_blocks:
-        binary_message_list = []
-        xor_product=[]
-        for block in droplet:
-            binary_message_list.append(binary_droplet_dict[block])
-        for digit in len(binary_message_list[0]):
-            number_true = 0
-            for block in binary_message_list:
-                if block[digit] == 1:
-                    number_true = number_true +1
-            xor_product.append(number_true%2)
-        binary_string.append(xor_product)  
-
 def convert_to_ascii(binary_string):
     binary_message = int(binary_string, 2)
     ascii_message = binary_message.to_bytes((binary_message.bit_length() + 7) // 8, 'big').decode()
@@ -130,7 +105,7 @@ def convert_to_ascii(binary_string):
 def process_files(droplet_sequence_dict, luby_blocks):
     luby_blocks = split_luby(luby_blocks)
     binary_droplet_dict = convert_seq_to_binary(droplet_sequence_dict)
-    binary_droplet_dict = split_fasta(binary_droplet_dict)
+    binary_droplet_dict = rename_keys_and_split_fasta(binary_droplet_dict)
     return binary_droplet_dict, luby_blocks
 
 def main():

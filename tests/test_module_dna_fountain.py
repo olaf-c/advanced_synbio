@@ -1,5 +1,5 @@
 import unittest
-from package.challenge_one_dna_fountain import load_in_files, convert_seq_to_binary, convert_str_to_binary, split_luby, split_fasta, split_binary_droplet_string, reverse_luby, convert_to_ascii, bitwise_xor
+from package.challenge_one_dna_fountain import load_in_files, convert_seq_to_binary, convert_str_to_binary, split_luby, rename_keys_and_split_fasta, split_binary_droplet_string, reverse_luby, convert_to_ascii, bitwise_xor
 
 def contains_no_integers(string):
     for char in string:
@@ -31,7 +31,7 @@ class TestDNAFountain(unittest.TestCase):
     def test_split_fasta(self):
         sequences, _ = load_in_files()
         binary_dict = convert_seq_to_binary(sequences)
-        split_dict = split_fasta(binary_dict)
+        split_dict = rename_keys_and_split_fasta(binary_dict)
         self.assertTrue(split_dict)
         for entry in split_dict:
             self.assertEqual(len(split_dict[entry]['LubyIndex']), 16)
@@ -41,7 +41,7 @@ class TestDNAFountain(unittest.TestCase):
         sequences, blocks = load_in_files()
         blocks = split_luby(blocks)
         binary_dict = convert_seq_to_binary(sequences)
-        split_dict = split_fasta(binary_dict)
+        split_dict = rename_keys_and_split_fasta(binary_dict)
         luby_reversed_message = reverse_luby(split_dict, blocks)
         self.assertIsInstance(luby_reversed_message, str)
 
